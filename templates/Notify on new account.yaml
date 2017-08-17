@@ -1,0 +1,41 @@
+$integration: 'http://ibm.com/appconnect/integration/v2/integrationFile'
+integration:
+  type: trigger-action
+  trigger-interfaces:
+    trigger-interface-1:
+      triggers:
+        CREATED:
+          input-context:
+            data: Event
+          assembly:
+            $ref: '#/integration/assemblies/assembly-1'
+      connector-type: eventbrite
+  action-interfaces:
+    action-interface-1:
+      type: api-action
+      business-object: message
+      connector-type: slack
+      actions:
+        CREATE: {}
+  assemblies:
+    assembly-1:
+      assembly:
+        execute:
+          - create-action:
+              name: Slack Create message
+              target:
+                $ref: '#/integration/action-interfaces/action-interface-1'
+              map:
+                $map: 'http://ibm.com/appconnect/map/v1'
+                mappings:
+                  - text:
+                      template: 'New account: {{$Trigger.Name}}'
+                  - channel:
+                      assign: C6J64GSF9
+                input:
+                  - variable: Trigger
+                    $ref: '#/trigger/payload'
+        tags:
+          - incomplete
+  name: Notify on new account
+models: {}
